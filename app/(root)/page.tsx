@@ -1,20 +1,39 @@
-import { EmptyState, Pagination, SharedHeader, VideoCard } from "@/components";
+import {
+  EmptyState,
+  Pagination,
+  SharedHeader,
+  VideoCard,
+} from "@/components";
 import { getAllVideos } from "@/lib/actions/video";
 
-const page = async ({ searchParams }: SearchParams) => {
-  const { query, filter, page } = await searchParams;
+// ✅ Proper type for search params
+type PageProps = {
+  searchParams?: {
+    query?: string;
+    filter?: string;
+    page?: string;
+  };
+};
 
-  const { videos, pagination } = await getAllVideos(
+const Page = async ({ searchParams }: PageProps) => {
+  // ✅ Safe destructuring with defaults
+  const query = searchParams?.query || "";
+  const filter = searchParams?.filter || "";
+  const currentPage = Number(searchParams?.page) || 1;
+
+  // ✅ Fetch data
+  const { videos = [], pagination } = await getAllVideos(
     query,
     filter,
-    Number(page) || 1
+    currentPage
   );
 
   return (
     <main className="wrapper page">
       <SharedHeader subHeader="Public Library" title="All Videos" />
 
-      {videos?.length > 0 ? (
+      {/* ✅ Video List */}
+      {videos.length > 0 ? (
         <section className="video-grid">
           {videos.map(({ video, user }) => (
             <VideoCard
@@ -27,7 +46,7 @@ const page = async ({ searchParams }: SearchParams) => {
               username={user?.name ?? "Guest"}
               views={video.views}
               visibility={video.visibility}
-              duration={video.duration}
+              duration={video.duration || 0} // ✅ fallback
             />
           ))}
         </section>
@@ -35,11 +54,16 @@ const page = async ({ searchParams }: SearchParams) => {
         <EmptyState
           icon="/assets/icons/video.svg"
           title="No Videos Found"
-          description="Try adjusting your search."
+          description={
+            query || filter
+              ? "Try adjusting your search or filters."
+              : "No videos available yet."
+          }
         />
       )}
 
-      {pagination?.totalPages > 1 && (
+      {/* ✅ Pagination */}
+      {pagination && pagination.totalPages > 1 && (
         <Pagination
           currentPage={pagination.currentPage}
           totalPages={pagination.totalPages}
@@ -51,4 +75,4 @@ const page = async ({ searchParams }: SearchParams) => {
   );
 };
 
-export default page;
+export default Page;
