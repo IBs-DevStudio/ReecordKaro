@@ -2,17 +2,38 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
 
 import { authClient } from "@/lib/auth-client";
 
 const SignIn = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleGoogleSignIn = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      await authClient.signIn.social({
+        provider: "google",
+      });
+    } catch (err: any) {
+      console.error("Sign-in error:", err);
+      setError("Failed to sign in. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <main className="sign-in">
+      {/* ✅ LEFT SIDE */}
       <aside className="testimonial">
-        <Link href="/">
+        <Link href="/" className="flex items-center gap-2">
           <Image
             src="/assets/icons/logo.svg"
-            alt="SnapChat Logo"
+            alt="SnapCast Logo"
             width={32}
             height={32}
           />
@@ -21,71 +42,89 @@ const SignIn = () => {
 
         <div className="description">
           <section>
-            <figure>
+            {/* ⭐ Stars */}
+            <figure className="flex gap-1">
               {Array.from({ length: 5 }).map((_, index) => (
                 <Image
                   src="/assets/icons/star.svg"
-                  alt="Star Icon"
+                  alt="rating star"
                   width={20}
                   height={20}
                   key={index}
                 />
               ))}
             </figure>
+
             <p>
-            SnapCast makes screen recording easy. From quick walkthroughs to
-              full presentations, it&apos;s fast, smooth, and shareable in seconds
+              SnapCast makes screen recording easy. From quick walkthroughs to
+              full presentations, it’s fast, smooth, and shareable in seconds.
             </p>
-            <article>
+
+            <article className="flex items-center gap-3">
               <Image
                 src="/assets/images/jason.png"
-                alt="Jason"
+                alt="Jason Rivera"
                 width={64}
                 height={64}
                 className="rounded-full"
               />
               <div>
                 <h2>Jason Rivera</h2>
-                <p>Product Designer, NovaByte</p>
+                <p className="text-sm text-gray-500">
+                  Product Designer, NovaByte
+                </p>
               </div>
             </article>
           </section>
         </div>
-        <p>© Snapcast 2025</p>
+
+        {/* ✅ Dynamic year */}
+        <p>© {new Date().getFullYear()} SnapCast</p>
       </aside>
+
+      {/* ✅ RIGHT SIDE */}
       <aside className="google-sign-in">
-        <section>
-          <Link href="/">
+        <section className="flex flex-col gap-4">
+          <Link href="/" className="flex items-center gap-2">
             <Image
               src="/assets/icons/logo.svg"
-              alt="SnapChat Logo"
+              alt="SnapCast Logo"
               width={40}
               height={40}
             />
             <h1>SnapCast</h1>
           </Link>
+
           <p>
-            Create and share your very first <span>SnapCast video</span> in no
-            time!
+            Create and share your very first{" "}
+            <span className="font-semibold">SnapCast video</span> in no time!
           </p>
 
+          {/* ✅ Error */}
+          {error && (
+            <p className="text-sm text-red-500">{error}</p>
+          )}
+
+          {/* ✅ Button */}
           <button
-            onClick={async () => {
-              return await authClient.signIn.social({
-                provider: "google",
-              });
-            }}
+            onClick={handleGoogleSignIn}
+            disabled={isLoading}
+            className="flex items-center justify-center gap-2 border rounded-md px-4 py-2 hover:bg-gray-50 transition disabled:opacity-50"
           >
             <Image
               src="/assets/icons/google.svg"
-              alt="Google Icon"
+              alt="Google"
               width={22}
               height={22}
             />
-            <span>Sign in with Google</span>
+            <span>
+              {isLoading ? "Signing in..." : "Sign in with Google"}
+            </span>
           </button>
         </section>
       </aside>
+
+      {/* ✅ Overlay */}
       <div className="overlay" />
     </main>
   );
